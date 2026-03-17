@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --bg-page: #000000;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-accent: rgba(0, 120, 255, 0.30);
+  --text-primary: rgba(255, 255, 255, 0.87);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.25);
+  --accent: #1a8aff;
+  --accent-dark: #0066ee;
+  --accent-glow-sm: 0 0 15px 2px rgba(0, 100, 255, 0.5), 0 0 40px 8px rgba(0, 80, 255, 0.25);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-card: 16px;
+  --radius-input: 100px;
+  --radius-badge: 100px;
+
+  --cat-strategic: rgba(139, 92, 246, 0.15);
+  --cat-product: rgba(0, 120, 255, 0.15);
+  --cat-hiring: rgba(16, 185, 129, 0.15);
+  --cat-technical: rgba(245, 158, 11, 0.15);
+  --cat-operating: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input, textarea, select, button {
+  font-family: var(--font);
+  font-size: inherit;
+}
