@@ -171,6 +171,8 @@ Instructions:
 - For owner: only fill if a specific person or team is explicitly mentioned
 - For alternatives/rationale/implications: only fill if the text provides real signals, otherwise omit
 - For category: Strategic = big company direction, Product = features/roadmap, Hiring = people/roles, Technical = architecture/tools, Operating = processes/ops
+- ALL field values MUST be plain strings (except tags which is an array of strings). NEVER return nested objects or arrays of objects for any field
+- For alternatives: list them as a single string like "Option A was rejected because X. Option B was rejected because Y."
 - Return ONLY valid JSON, no markdown fences, no explanation
 - tags should be lowercase single words or short phrases derived from the actual content`
 
@@ -245,16 +247,35 @@ Instructions:
 
     const data = await response.json()
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-    const cleaned = raw
-      .replace(/<think>[\s\S]*?<\/think>/g, '')
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
+
+    console.log('Gemini raw response:', raw.slice(0, 500))
+
+    if (!raw) {
+      console.error('Gemini returned empty response')
+      res.status(502).json({ error: 'Gemini returned empty response' })
+      return
+    }
+
+    let cleaned = raw
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
       .trim()
+
+    const jsonStart = cleaned.indexOf('{')
+    const jsonEnd = cleaned.lastIndexOf('}')
+    if (jsonStart === -1 || jsonEnd === -1) {
+      console.error('No JSON object found in Gemini response:', cleaned.slice(0, 300))
+      res.status(502).json({ error: 'Could not parse Gemini response' })
+      return
+    }
+    cleaned = cleaned.slice(jsonStart, jsonEnd + 1)
+
     const structured = JSON.parse(cleaned)
     res.json(structured)
-  } catch (err) {
-    console.error('Structure error:', err)
-    res.status(500).json({ error: 'Failed to structure text' })
+  } catch (err: any) {
+    console.error('Structure error:', err.message || err)
+    res.status(500).json({ error: err.message || 'Failed to structure text' })
   }
 })
 

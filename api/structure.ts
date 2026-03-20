@@ -27,6 +27,8 @@ Instructions:
 - For owner: only fill if a specific person or team is explicitly mentioned
 - For alternatives/rationale/implications: only fill if the text provides real signals, otherwise omit
 - For category: Strategic = big company direction, Product = features/roadmap, Hiring = people/roles, Technical = architecture/tools, Operating = processes/ops
+- ALL field values MUST be plain strings (except tags which is an array of strings). NEVER return nested objects or arrays of objects for any field
+- For alternatives: list them as a single string like "Option A was rejected because X. Option B was rejected because Y."
 - Return ONLY valid JSON, no markdown fences, no explanation
 - tags should be lowercase single words or short phrases derived from the actual content`
 
@@ -134,17 +136,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const data = await response.json()
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
 
-    // Strip markdown fences and thinking tags if present
-    const cleaned = raw
-      .replace(/<think>[\s\S]*?<\/think>/g, '')
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
+    console.log('Gemini raw response:', raw.slice(0, 500))
+
+    if (!raw) {
+      console.error('Gemini returned empty response')
+      return res.status(502).json({ error: 'Gemini returned empty response' })
+    }
+
+    // Strip thinking tags, markdown fences, and any non-JSON prefix/suffix
+    let cleaned = raw
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
       .trim()
+
+    // Extract JSON object — find first { and last }
+    const jsonStart = cleaned.indexOf('{')
+    const jsonEnd = cleaned.lastIndexOf('}')
+    if (jsonStart === -1 || jsonEnd === -1) {
+      console.error('No JSON object found in Gemini response:', cleaned.slice(0, 300))
+      return res.status(502).json({ error: 'Could not parse Gemini response' })
+    }
+    cleaned = cleaned.slice(jsonStart, jsonEnd + 1)
 
     const structured = JSON.parse(cleaned)
     return res.status(200).json(structured)
-  } catch (err) {
-    console.error('Structure error:', err)
-    return res.status(500).json({ error: 'Failed to structure text' })
+  } catch (err: any) {
+    console.error('Structure error:', err.message || err)
+    return res.status(500).json({ error: err.message || 'Failed to structure text' })
   }
 }
