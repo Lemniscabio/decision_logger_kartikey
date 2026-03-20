@@ -10,7 +10,7 @@ Return a JSON object with these fields:
 - title: A concise one-line summary of the decision (required, under 80 chars)
 - category: One of "Strategic", "Product", "Hiring", "Technical", "Operating" — pick the best fit (required)
 - decision: What was actually decided — state it clearly even if the raw text is vague (required)
-- context: What prompted or led to this decision — background, trigger event, problem being solved
+- context: IMPORTANT — always start this field with any URLs, links, references, names, or key data points from the original shared text verbatim, then follow with the extracted background/context. This field is the user's reference back to the source material, so never lose any concrete information (links, numbers, dates, names) from the original text
 - rationale: Why this option was chosen — the reasoning, tradeoffs, data points
 - alternatives: What else was considered and why it was rejected
 - owner: Who made or owns this decision (person or team name if mentioned)
