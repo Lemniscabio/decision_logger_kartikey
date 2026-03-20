@@ -171,6 +171,7 @@ Instructions:
 - For owner: only fill if a specific person or team is explicitly mentioned
 - For alternatives/rationale/implications: only fill if the text provides real signals, otherwise omit
 - For category: Strategic = big company direction, Product = features/roadmap, Hiring = people/roles, Technical = architecture/tools, Operating = processes/ops
+- Keep each field value to 1-3 sentences max — be concise, not verbose
 - ALL field values MUST be plain strings (except tags which is an array of strings). NEVER return nested objects or arrays of objects for any field
 - For alternatives: list them as a single string like "Option A was rejected because X. Option B was rejected because Y."
 - Return ONLY valid JSON, no markdown fences, no explanation
@@ -233,7 +234,7 @@ Instructions:
         }],
         generationConfig: {
           temperature: 0.3,
-          maxOutputTokens: 1500
+          maxOutputTokens: 4096
         }
       })
     })
