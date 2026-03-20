@@ -42,10 +42,21 @@ export default function LogView({ onNew, onEdit }: Props) {
     }
   }, [query, category])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this decision?')) return
-    await deleteDecision(id)
-    setDecisions(prev => prev.filter(d => d._id !== id))
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
+  const handleDelete = (id: string) => {
+    setDeleteConfirmId(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return
+    try {
+      await deleteDecision(deleteConfirmId)
+      setDecisions(prev => prev.filter(d => d._id !== deleteConfirmId))
+    } catch (err) {
+      console.error('Failed to delete:', err)
+    }
+    setDeleteConfirmId(null)
   }
 
   return (
@@ -81,6 +92,18 @@ export default function LogView({ onNew, onEdit }: Props) {
             onDelete={handleDelete}
           />
         ))
+      )}
+
+      {deleteConfirmId && (
+        <div className="confirm-overlay" onClick={() => setDeleteConfirmId(null)}>
+          <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
+            <p>Delete this decision?</p>
+            <div className="confirm-actions">
+              <button className="confirm-cancel" onClick={() => setDeleteConfirmId(null)}>Cancel</button>
+              <button className="confirm-delete" onClick={confirmDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -444,6 +444,60 @@
   to { transform: rotate(360deg); }
 }
 
+/* Confirm dialog */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.confirm-dialog {
+  background: #1a1a1a;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  width: 280px;
+  text-align: center;
+}
+
+.confirm-dialog p {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 400;
+  margin: 0 0 20px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-cancel,
+.confirm-delete {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-card);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.confirm-cancel {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.confirm-delete {
+  background: #dc2626;
+  color: white;
+}
+
 /* Structuring overlay */
 .structuring-overlay {
   position: fixed;
