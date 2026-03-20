@@ -26,6 +26,7 @@ export default function EntryView({ editId, onBack }: Props) {
   const [implications, setImplications] = useState('')
   const [saving, setSaving] = useState(false)
   const [structuring, setStructuring] = useState(false)
+  const [loadingEdit, setLoadingEdit] = useState(!!editId)
 
   // Handle share target params — auto-structure with Gemini
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function EntryView({ editId, onBack }: Props) {
       setImplications(toStr(d.implications))
     }).catch(err => {
       console.error('Failed to load decision:', err)
-    })
+    }).finally(() => setLoadingEdit(false))
   }, [editId])
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -152,6 +153,17 @@ export default function EntryView({ editId, onBack }: Props) {
         <h2>{editId ? 'Edit Decision' : 'New Decision'}</h2>
       </div>
 
+      {loadingEdit ? (
+        <div className="edit-skeleton">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton-field">
+              <div className="skeleton-line short" />
+              <div className="skeleton-line long" style={{ marginTop: 8 }} />
+            </div>
+          ))}
+        </div>
+      ) :
+      <>
       <div className="form-group">
         <label className="form-label">Title *</label>
         <input
@@ -319,6 +331,8 @@ export default function EntryView({ editId, onBack }: Props) {
       >
         {saving ? <span className="spinner" /> : (editId ? 'Update Decision' : 'Save Decision')}
       </button>
+      </>
+      }
     </div>
   )
 }

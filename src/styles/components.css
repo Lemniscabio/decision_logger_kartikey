@@ -614,6 +614,20 @@
   50% { opacity: 0.8; }
 }
 
+/* Edit skeleton */
+.edit-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.skeleton-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;
