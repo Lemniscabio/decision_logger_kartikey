@@ -1,7 +1,6 @@
 # PRD-lite — Decision Log + Retrieval
 **Version:** 1.1  
 **Sprint:** Internal Hackathon  
-**Status:** Ready for build
 
 ---
 
