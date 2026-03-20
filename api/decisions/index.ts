@@ -11,17 +11,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const collection = await getDecisionsCollection()
+  try {
+    const collection = await getDecisionsCollection()
 
-  if (req.method === 'POST') {
-    return handleCreate(req, res, collection)
+    if (req.method === 'POST') {
+      return await handleCreate(req, res, collection)
+    }
+
+    if (req.method === 'GET') {
+      return await handleList(req, res, collection)
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (err: any) {
+    console.error('API error:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
   }
-
-  if (req.method === 'GET') {
-    return handleList(req, res, collection)
-  }
-
-  return res.status(405).json({ error: 'Method not allowed' })
 }
 
 async function handleCreate(req: VercelRequest, res: VercelResponse, collection: any) {
