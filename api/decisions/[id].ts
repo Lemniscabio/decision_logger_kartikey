@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { ObjectId } from 'mongodb'
-import { getDecisionsCollection } from '../../lib/db'
-import { generateEmbedding, buildEmbeddingText } from '../../lib/embeddings'
-import { upsertVector, deleteVector } from '../../lib/qdrant'
+import { getDecisionsCollection } from '../lib/db'
+import { generateEmbedding, buildEmbeddingText } from '../lib/embeddings'
+import { upsertVector, deleteVector } from '../lib/qdrant'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')

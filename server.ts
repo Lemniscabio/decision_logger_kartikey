@@ -3,9 +3,9 @@ dotenv.config({ path: '.env.local' })
 import express from 'express'
 import cors from 'cors'
 import { ObjectId } from 'mongodb'
-import { getDecisionsCollection } from './lib/db'
-import { generateEmbedding, buildEmbeddingText } from './lib/embeddings'
-import { upsertVector, searchVectors, deleteVector } from './lib/qdrant'
+import { getDecisionsCollection } from './api/lib/db'
+import { generateEmbedding, buildEmbeddingText } from './api/lib/embeddings'
+import { upsertVector, searchVectors, deleteVector } from './api/lib/qdrant'
 
 const app = express()
 app.use(cors())
