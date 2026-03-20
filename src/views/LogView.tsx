@@ -43,20 +43,30 @@ export default function LogView({ onNew, onEdit }: Props) {
   }, [query, category])
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteSuccess, setDeleteSuccess] = useState(false)
 
   const handleDelete = (id: string) => {
     setDeleteConfirmId(id)
+    setDeleting(false)
+    setDeleteSuccess(false)
   }
 
   const confirmDelete = async () => {
     if (!deleteConfirmId) return
+    setDeleting(true)
     try {
       await deleteDecision(deleteConfirmId)
-      setDecisions(prev => prev.filter(d => d._id !== deleteConfirmId))
+      setDeleteSuccess(true)
+      setTimeout(() => {
+        setDecisions(prev => prev.filter(d => d._id !== deleteConfirmId))
+        setDeleteConfirmId(null)
+        setDeleteSuccess(false)
+      }, 800)
     } catch (err) {
       console.error('Failed to delete:', err)
+      setDeleting(false)
     }
-    setDeleteConfirmId(null)
   }
 
   return (
@@ -95,13 +105,26 @@ export default function LogView({ onNew, onEdit }: Props) {
       )}
 
       {deleteConfirmId && (
-        <div className="confirm-overlay" onClick={() => setDeleteConfirmId(null)}>
+        <div className="confirm-overlay" onClick={() => !deleting && setDeleteConfirmId(null)}>
           <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
-            <p>Delete this decision?</p>
-            <div className="confirm-actions">
-              <button className="confirm-cancel" onClick={() => setDeleteConfirmId(null)}>Cancel</button>
-              <button className="confirm-delete" onClick={confirmDelete}>Delete</button>
-            </div>
+            {deleteSuccess ? (
+              <div className="delete-success">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <p>Deleted</p>
+              </div>
+            ) : (
+              <>
+                <p>Delete this decision?</p>
+                <div className="confirm-actions">
+                  <button className="confirm-cancel" onClick={() => setDeleteConfirmId(null)} disabled={deleting}>Cancel</button>
+                  <button className="confirm-delete" onClick={confirmDelete} disabled={deleting}>
+                    {deleting ? <span className="spinner" /> : 'Delete'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
