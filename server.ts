@@ -131,6 +131,77 @@ app.delete('/api/decisions/:id', async (req, res) => {
   res.json({ ok: true })
 })
 
+// POST /api/structure — Gemini text structuring
+app.post('/api/structure', async (req, res) => {
+  const { text } = req.body
+  if (!text || typeof text !== 'string') {
+    res.status(400).json({ error: 'Missing "text" field' })
+    return
+  }
+
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+  if (!GEMINI_API_KEY) {
+    res.status(500).json({ error: 'GEMINI_API_KEY not configured' })
+    return
+  }
+
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
+
+  const SYSTEM_PROMPT = `You are a structured data extractor for a decision log. Given raw text (shared from WhatsApp, email, Slack, notes, etc.), extract and return a JSON object with these fields:
+
+- title: A concise one-line summary of the decision (required)
+- category: One of "Strategic", "Product", "Hiring", "Technical", "Operating" — pick the best fit (required)
+- decision: What was actually decided (required)
+- context: What prompted this decision
+- rationale: Why this was chosen over alternatives
+- alternatives: What else was considered
+- owner: Who made or owns the decision
+- tags: Array of relevant keyword tags (2-5 tags)
+- implications: What happens next as a result
+
+Rules:
+- Return ONLY valid JSON, no markdown fences, no explanation
+- If a field can't be extracted, omit it from the JSON
+- Keep each field concise and clear
+- title should be under 80 characters
+- tags should be lowercase single words or short phrases`
+
+  try {
+    const response = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: SYSTEM_PROMPT },
+            { text: `Raw text to structure:\n\n${text}` }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 1024
+        }
+      })
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      console.error('Gemini API error:', err)
+      res.status(502).json({ error: 'Failed to call Gemini API' })
+      return
+    }
+
+    const data = await response.json()
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const structured = JSON.parse(cleaned)
+    res.json(structured)
+  } catch (err) {
+    console.error('Structure error:', err)
+    res.status(500).json({ error: 'Failed to structure text' })
+  }
+})
+
 const PORT = 3001
 app.listen(PORT, () => {
   console.log(`API server running on http://localhost:${PORT}`)

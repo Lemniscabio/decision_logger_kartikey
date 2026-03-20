@@ -79,3 +79,25 @@ export async function deleteDecision(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete decision')
 }
+
+export interface StructuredDecision {
+  title?: string
+  category?: string
+  decision?: string
+  context?: string
+  rationale?: string
+  alternatives?: string
+  owner?: string
+  tags?: string[]
+  implications?: string
+}
+
+export async function structureText(text: string): Promise<StructuredDecision> {
+  const res = await fetch('/api/structure', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  })
+  if (!res.ok) throw new Error('Failed to structure text')
+  return res.json()
+}

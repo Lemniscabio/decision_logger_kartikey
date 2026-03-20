@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getToday } from '../lib/dateUtils'
-import { createDecision, updateDecision, fetchDecision } from '../lib/api'
+import { createDecision, updateDecision, fetchDecision, structureText } from '../lib/api'
 
 const DEFAULT_CATEGORIES = ['Strategic', 'Product', 'Hiring', 'Technical', 'Operating']
 
@@ -25,14 +25,37 @@ export default function EntryView({ editId, onBack }: Props) {
   const [tagInput, setTagInput] = useState('')
   const [implications, setImplications] = useState('')
   const [saving, setSaving] = useState(false)
+  const [structuring, setStructuring] = useState(false)
 
-  // Handle share target params
+  // Handle share target params — auto-structure with Gemini
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const sharedText = params.get('text') || params.get('url') || ''
     const sharedTitle = params.get('title') || ''
-    if (sharedText) setContext(sharedText)
-    if (sharedTitle) setTitle(sharedTitle)
+
+    if (!sharedText && !sharedTitle) return
+
+    const rawText = [sharedTitle, sharedText].filter(Boolean).join('\n\n')
+    setStructuring(true)
+
+    structureText(rawText)
+      .then(result => {
+        if (result.title) setTitle(result.title)
+        if (result.category) setCategory(result.category)
+        if (result.decision) setDecision(result.decision)
+        if (result.context) setContext(result.context)
+        if (result.rationale) setRationale(result.rationale)
+        if (result.alternatives) setAlternatives(result.alternatives)
+        if (result.owner) setOwner(result.owner)
+        if (result.tags) setTags(result.tags)
+        if (result.implications) setImplications(result.implications)
+      })
+      .catch(() => {
+        // Fallback: just put raw text in context
+        if (sharedText) setContext(sharedText)
+        if (sharedTitle) setTitle(sharedTitle)
+      })
+      .finally(() => setStructuring(false))
   }, [])
 
   // Load existing decision for editing
@@ -105,6 +128,14 @@ export default function EntryView({ editId, onBack }: Props) {
 
   return (
     <div className="entry-view">
+      {structuring && (
+        <div className="structuring-overlay">
+          <div className="structuring-card">
+            <span className="spinner" />
+            <p>Structuring shared text...</p>
+          </div>
+        </div>
+      )}
       <div className="entry-header">
         <button className="back-btn" onClick={onBack}>&larr;</button>
         <h2>{editId ? 'Edit Decision' : 'New Decision'}</h2>
