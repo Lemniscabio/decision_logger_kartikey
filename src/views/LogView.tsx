@@ -15,7 +15,7 @@ export default function LogView({ onNew, onEdit }: Props) {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   const load = async (q?: string) => {
     setLoading(true)
