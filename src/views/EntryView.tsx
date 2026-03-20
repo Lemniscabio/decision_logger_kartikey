@@ -58,20 +58,31 @@ export default function EntryView({ editId, onBack }: Props) {
       .finally(() => setStructuring(false))
   }, [])
 
+  // Safely convert any value to string (Gemini may have stored objects)
+  const toStr = (val: unknown): string => {
+    if (!val) return ''
+    if (typeof val === 'string') return val
+    if (Array.isArray(val)) return val.map(v => typeof v === 'object' ? Object.values(v as Record<string, unknown>).join(' — ') : String(v)).join('\n')
+    if (typeof val === 'object') return Object.values(val as Record<string, unknown>).join(' — ')
+    return String(val)
+  }
+
   // Load existing decision for editing
   useEffect(() => {
     if (!editId) return
     fetchDecision(editId).then(d => {
-      setTitle(d.title)
-      setDate(d.date)
-      setCategory(d.category)
-      setDecision(d.decision)
-      setContext(d.context || '')
-      setRationale(d.rationale || '')
-      setAlternatives(d.alternatives || '')
-      setOwner(d.owner || '')
-      setTags(d.tags || [])
-      setImplications(d.implications || '')
+      setTitle(d.title || '')
+      setDate(d.date || getToday())
+      setCategory(d.category || '')
+      setDecision(toStr(d.decision))
+      setContext(toStr(d.context))
+      setRationale(toStr(d.rationale))
+      setAlternatives(toStr(d.alternatives))
+      setOwner(toStr(d.owner))
+      setTags(Array.isArray(d.tags) ? d.tags : [])
+      setImplications(toStr(d.implications))
+    }).catch(err => {
+      console.error('Failed to load decision:', err)
     })
   }, [editId])
 
