@@ -246,32 +246,28 @@ Instructions:
     }
 
     const data = await response.json()
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
 
-    console.log('Gemini raw response:', raw.slice(0, 500))
+    const parts = data.candidates?.[0]?.content?.parts || []
+    const raw = parts.map((p: any) => p.text || '').join('')
+
+    console.log('Gemini raw length:', raw.length, 'first 500:', raw.slice(0, 500))
 
     if (!raw) {
-      console.error('Gemini returned empty response')
+      console.error('Gemini returned empty response, full data:', JSON.stringify(data).slice(0, 500))
       res.status(502).json({ error: 'Gemini returned empty response' })
       return
     }
 
-    let cleaned = raw
-      .replace(/<think>[\s\S]*?<\/think>/gi, '')
-      .replace(/```json\s*/gi, '')
-      .replace(/```\s*/g, '')
-      .trim()
-
-    const jsonStart = cleaned.indexOf('{')
-    const jsonEnd = cleaned.lastIndexOf('}')
-    if (jsonStart === -1 || jsonEnd === -1) {
-      console.error('No JSON object found in Gemini response:', cleaned.slice(0, 300))
+    const jsonStart = raw.indexOf('{')
+    const jsonEnd = raw.lastIndexOf('}')
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      console.error('No JSON found. Raw response:', raw)
       res.status(502).json({ error: 'Could not parse Gemini response' })
       return
     }
-    cleaned = cleaned.slice(jsonStart, jsonEnd + 1)
 
-    const structured = JSON.parse(cleaned)
+    const jsonStr = raw.slice(jsonStart, jsonEnd + 1)
+    const structured = JSON.parse(jsonStr)
     res.json(structured)
   } catch (err: any) {
     console.error('Structure error:', err.message || err)

@@ -134,32 +134,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data = await response.json()
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
 
-    console.log('Gemini raw response:', raw.slice(0, 500))
+    // Combine all text parts (Gemini 2.5 may split across multiple parts)
+    const parts = data.candidates?.[0]?.content?.parts || []
+    const raw = parts.map((p: any) => p.text || '').join('')
+
+    console.log('Gemini raw length:', raw.length, 'first 500:', raw.slice(0, 500))
 
     if (!raw) {
-      console.error('Gemini returned empty response')
+      console.error('Gemini returned empty response, full data:', JSON.stringify(data).slice(0, 500))
       return res.status(502).json({ error: 'Gemini returned empty response' })
     }
 
-    // Strip thinking tags, markdown fences, and any non-JSON prefix/suffix
-    let cleaned = raw
-      .replace(/<think>[\s\S]*?<\/think>/gi, '')
-      .replace(/```json\s*/gi, '')
-      .replace(/```\s*/g, '')
-      .trim()
-
-    // Extract JSON object — find first { and last }
-    const jsonStart = cleaned.indexOf('{')
-    const jsonEnd = cleaned.lastIndexOf('}')
-    if (jsonStart === -1 || jsonEnd === -1) {
-      console.error('No JSON object found in Gemini response:', cleaned.slice(0, 300))
+    // Extract JSON: find first { and last } in the raw response directly
+    const jsonStart = raw.indexOf('{')
+    const jsonEnd = raw.lastIndexOf('}')
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      console.error('No JSON found. Raw response:', raw)
       return res.status(502).json({ error: 'Could not parse Gemini response' })
     }
-    cleaned = cleaned.slice(jsonStart, jsonEnd + 1)
 
-    const structured = JSON.parse(cleaned)
+    const jsonStr = raw.slice(jsonStart, jsonEnd + 1)
+    const structured = JSON.parse(jsonStr)
     return res.status(200).json(structured)
   } catch (err: any) {
     console.error('Structure error:', err.message || err)
