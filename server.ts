@@ -165,10 +165,14 @@ Instructions:
 - Be proactive: read between the lines, infer context from the tone and content
 - If the text contains a URL, the page content will be provided — use it heavily to fill fields
 - If the raw text is messy or conversational, clean it up into professional decision language
-- Fill as many fields as possible — guess intelligently rather than leaving fields empty
+- Fill fields only with information you can extract or reasonably infer from the provided text
+- NEVER fabricate names, dates, numbers, or specific facts that aren't in the source text
+- If you cannot determine a field's value, omit it entirely — do NOT guess or hallucinate
+- For owner: only fill if a specific person or team is explicitly mentioned
+- For alternatives/rationale/implications: only fill if the text provides real signals, otherwise omit
 - For category: Strategic = big company direction, Product = features/roadmap, Hiring = people/roles, Technical = architecture/tools, Operating = processes/ops
 - Return ONLY valid JSON, no markdown fences, no explanation
-- tags should be lowercase single words or short phrases`
+- tags should be lowercase single words or short phrases derived from the actual content`
 
   // Extract URLs from text
   const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/g
